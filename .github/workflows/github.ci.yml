@@ -3,10 +3,10 @@ name: Node CI
 on:
   push:
     branches:
-      - "**" # kör på alla branches
+      - "feature/**" # kör bara på feature branches
   pull_request:
     branches:
-      - "**" # kör på alla PRs
+      - "main" # kör på main PRs
 
 jobs:
   ci:
