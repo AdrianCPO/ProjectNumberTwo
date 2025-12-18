@@ -1,32 +1,33 @@
-name: Node CI
+name: CI
 
 on:
   push:
-    branches:
-      - "**" # kör på alla branches
+    branches: ["**"]
   pull_request:
-    branches:
-      - "**" # kör på alla PRs
+    branches: ["**"]
 
 jobs:
-  ci:
+  build-and-check:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Run tests
-        run: npm test
-
-      - name: Run linter
+      - name: Lint
         run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
