@@ -1,15 +1,78 @@
-datasource db {
-  provider = "sqlite"
+generator client {
+  provider = "prisma-client-js"
 }
 
-generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  email        String         @unique
+  passwordHash String
+  createdAt    DateTime       @default(now())
+
+  documents     Document[]
+  conversations Conversation[]
 }
 
 model Document {
-  id        String   @id @default(cuid())
-  title     String
-  content   String
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  title        String
+  category     String   @default("other")
+  originalName String?
+  contentText  String?
+  status       String   @default("ready")
+  createdAt    DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chunks Chunk[]
+}
+
+model Chunk {
+  id         Int      @id @default(autoincrement())
+  documentId Int
+  chunkIndex Int
+  content    String
+  createdAt  DateTime @default(now())
+
+  document  Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  embedding Embedding?
+
+  @@unique([documentId, chunkIndex])
+}
+
+model Embedding {
+  chunkId    Int      @id
+  model      String
+  dim        Int
+  vectorBlob Bytes
+  createdAt  DateTime @default(now())
+
+  chunk Chunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+}
+
+model Conversation {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String   @default("Ny konversation")
   createdAt DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages Message[]
+}
+
+model Message {
+  id             Int      @id @default(autoincrement())
+  conversationId Int
+  role           String
+  content        String
+  createdAt      DateTime @default(now())
+  sourcesJson    String?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
 }
